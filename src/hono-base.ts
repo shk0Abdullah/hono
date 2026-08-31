@@ -129,13 +129,14 @@ class Hono<
     const allMethods = [...METHODS, METHOD_NAME_ALL_LOWERCASE]
     allMethods.forEach((method) => {
       this[method] = (args1: string | H, ...args: H[]) => {
+        const methodName = method.toUpperCase()
         if (typeof args1 === 'string') {
           this.#path = args1
         } else {
-          this.#addRoute(method, this.#path, args1)
+          this.#addRoute(methodName, this.#path, args1)
         }
         args.forEach((handler) => {
-          this.#addRoute(method, this.#path, handler)
+          this.#addRoute(methodName, this.#path, handler)
         })
         return this as any
       }
@@ -147,9 +148,9 @@ class Hono<
         this.#path = p
         for (const m of [method].flat()) {
           const methodName = m.toUpperCase()
-          handlers.forEach((handler) => {
+          for (const handler of handlers) {
             this.#addRoute(methodName, this.#path, handler)
-          })
+          }
         }
       }
       return this as any
@@ -385,7 +386,6 @@ class Hono<
   }
 
   #addRoute(method: string, path: string, handler: H, baseRoutePath?: string): void {
-    method = method.toUpperCase()
     path = mergePath(this._basePath, path)
     const r: RouterRoute = {
       basePath:
